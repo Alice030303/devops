@@ -1,0 +1,14 @@
+.list-container{
+    min-height: 100vh;
+}
+.user-detail-container{
+    min-height: 100vh;
+    
+}
+
+.user-row{
+    
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}

@@ -1,0 +1,29 @@
+import express from 'express';
+import * as userControllers from '../controllers/userControllers.js';
+import auth from '../middlewares/auth.js';
+
+const router = express.Router();
+
+router.get('/profile', auth, async function getProfile(req, res) {
+  return res.send(await userControllers.getProfile(req.user.userId));
+});
+
+router.put('/settings', auth, async function updateSettings(req, res) {
+  const { userId } = req.user;
+  const { name, email, password, newPassword } = req.body;
+  return res.send(
+    await userControllers.updateSettings(
+      userId,
+      name,
+      email,
+      password,
+      newPassword
+    )
+  );
+});
+
+router.get('/search', auth, async function searchUsers(req, res) {
+  return res.send(await userControllers.searchUsers(req.query.search));
+});
+
+export default router;

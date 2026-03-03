@@ -1,0 +1,88 @@
+/* --- Base de la Navbar --- */
+.navbar {
+    background-color: #111;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-brand a {
+    color: #ffc107;
+    text-decoration: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+    margin: 0;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
+.nav-links a:hover {
+    color: #ffc107;
+}
+
+/* --- Menu Burger (Caché par défaut sur Desktop) --- */
+.nav-burger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 5px;
+}
+
+.nav-burger span {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .nav-burger {
+        display: flex;
+        z-index: 1001; /* Pour rester au dessus du menu */
+    }
+
+    .nav-links {
+        position: fixed; /* Fixed est souvent mieux que absolute pour les menus plein écran */
+        z-index:10;
+        top: 0;
+        right: 0;
+        flex-direction: column;
+        background-color: #111;
+        width: 100%;
+        height: 100vh;
+        justify-content: center; /* Centre les liens verticalement */
+        align-items: center;
+        
+        /* Correction ici : on utilise transform au lieu de right */
+        transform: translateX(100%); 
+        transition: transform 0.4s ease-in-out;
+        padding-top: 0;
+        margin: 0;
+    }
+
+    .nav-links.active {
+        transform: translateX(0); /* Le menu revient à sa place */
+    }
+
+    /* Optionnel : Effet de flou sur le fond si vous voulez */
+    .nav-links.active {
+        backdrop-filter: blur(10px);
+        background-color: rgba(17, 17, 17, 0.95);
+    }
+}

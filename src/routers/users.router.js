@@ -26,4 +26,15 @@ router.get('/search', auth, async function searchUsers(req, res) {
   return res.send(await userControllers.searchUsers(req.query.search));
 });
 
+router.delete('/removeFromList', auth, async function removeFromList(req, res) {
+  const { idMovieToRemove, listType } = req.body;
+
+  return res.send(
+    await userControllers.removeFromList(
+      idMovieToRemove,
+      req.user.userId,
+      listType
+    )
+  );
+});
 export default router;

@@ -114,7 +114,7 @@ export const Profile = () => {
               image={movie.posterPath}
               overview={movie.overview}
               runtime={movie.runtime}
-           
+              listType={UserListType.WISHLIST}
             />
           ))}
           {[...Array(6 - wishlistMovies.slice(0, 6).length)].map((_, i) => (
@@ -138,7 +138,7 @@ export const Profile = () => {
               image={movie.posterPath}
               overview={movie.overview}
               runtime={movie.runtime}
-             
+              listType={UserListType.FAVORITE}
             />
           ))}
           {[...Array(6 - favoriteMovies.slice(0, 6).length)].map((_, i) => (
@@ -162,6 +162,7 @@ export const Profile = () => {
               image={movie.posterPath}
               overview={movie.overview}
               runtime={movie.runtime}
+              listType={UserListType.WATCHED}
             />
           ))}
           {[...Array(6 - watchedMovies.slice(0, 6).length)].map((_, i) => (

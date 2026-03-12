@@ -60,3 +60,22 @@ export async function searchUsers(search) {
     throw new Error('Erreur recherche utilisateurs');
   }
 }
+export async function removeFromList(idMovieToRemove, userId, listType) {
+  try {
+    if (!idMovieToRemove) {
+      throw new Error('movie id required');
+    }
+
+    await defineUserModel.findByIdAndUpdate(userId, {
+      $pull: { [listType]: idMovieToRemove },
+    });
+
+    return {
+      success: true,
+      message: 'Le film a été retiré de votre liste',
+    };
+  } catch (error) {
+    console.error(error);
+    throw new Error(`Impossible de retirer de ${listType}`);
+  }
+}

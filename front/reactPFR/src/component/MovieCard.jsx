@@ -7,7 +7,7 @@ const TMDB_IMAGE_BASE_URL = import.meta.env.VITE_TMDB_IMAGE_BASE_URL;
 const BACK_URL = import.meta.env.VITE_BACK_URL;
 
 
-export function MovieCard({id, title, image, date, overview,runtime}) {
+export function MovieCard({id, title, image, date, overview, runtime, listType}) {
     const { user, fetchUserProfile } = useUser();
     const isLoggedIn = !!(user && user._id);
     
@@ -49,10 +49,32 @@ export function MovieCard({id, title, image, date, overview,runtime}) {
             console.error(e);
         }
     };
+    const removeFromList = async (type) => {
+
+         let url = `${BACK_URL}/users/removeFromList`;
+        try {
+            
+            const res = await fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    
+                },
+                credentials: 'include',
+                body: JSON.stringify({ idMovieToRemove: id,  listType: type }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Erreur lors du retrait');
+            await fetchUserProfile();
+            showMessage(data.message || "Retrait réussi", 'success');
+        } catch (e) {
+            showMessage(e.message || "Erreur lors du retrait", 'error');
+            console.error(e);
+        }
+    }
 
     return (
         <div className="movie-card-container">
-            
             <Link to={`/movie/${id}`} className="movie-card" >
                 {image &&
                     <img
@@ -68,14 +90,47 @@ export function MovieCard({id, title, image, date, overview,runtime}) {
             </Link>
             {isLoggedIn && (
                 <div className="card-action-bar">
-                    <button className="action-button favorite" onClick={() => addToList('favorite')} title="Ajouter aux favoris">
-                        <span role="img" aria-label="Cœur">❤️</span>
+                    
+                    <button
+                        className="action-button favorite"
+                        onClick={async () => {
+                            if (listType === 'favorite') {
+                                removeFromList('favorite');
+                            } else {
+                                addToList('favorite');
+                            }
+                        }}
+                        title={listType === 'favorite' ? "Retirer des favoris" : "Ajouter aux favoris"}
+                    >
+                        <span role="img" aria-label={listType === 'favorite' ? "Cœur barré" : "Cœur"}>{listType === 'favorite' ? '💔' : '❤️'}</span>
                     </button>
-                    <button className="action-button watchlist" onClick={() => addToList('wishlist')} title="Ajouter à la liste de souhaits">
-                        <span role="img" aria-label="Liste">📋</span>
+                    
+                    <button
+                        className="action-button watchlist"
+                        onClick={async () => {
+                            if (listType === 'wishlist') {
+                              removeFromList('wishlist');
+                            } else {
+                                addToList('wishlist');
+                            }
+                        }}
+                        title={listType === 'wishlist' ? "Retirer de la wishlist" : "Ajouter à la liste de souhaits"}
+                    >
+                        <span role="img" aria-label={listType === 'wishlist' ? "Liste barrée" : "Liste"}>{listType === 'wishlist' ? '🗑️' : '📋'}</span>
                     </button>
-                    <button className="action-button seen" onClick={() => addToList('watched')} title="Marquer comme vu">
-                        <span role="img" aria-label="Œil">👀</span>
+                    
+                    <button
+                        className="action-button seen"
+                        onClick={async () => {
+                            if (listType === 'watched') {
+                               removeFromList('watched');
+                            } else {
+                                addToList('watched');
+                            }
+                        }}
+                        title={listType === 'watched' ? "Retirer des vus" : "Marquer comme vu"}
+                    >
+                        <span role="img" aria-label={listType === 'watched' ? "Œil barré" : "Œil"}>{listType === 'watched' ? '🙈' : '👀'}</span>
                     </button>
                 </div>
             )}

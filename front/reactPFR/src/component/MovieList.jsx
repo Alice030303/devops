@@ -3,7 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import './css/MovieList.css'; 
 
 
-export function MovieList({ searchQuery, movies: moviesProp }) {
+export function MovieList({ searchQuery, movies: moviesProp, listType: propListType }) {
   const [movies, setMovies] = useState(moviesProp || []);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -136,6 +136,7 @@ export function MovieList({ searchQuery, movies: moviesProp }) {
           image={movie.poster_path || movie.posterPath}
           overview={movie.overview || movie.overview}
           runtime={movie.runtime}
+          listType={propListType}
         />
       ))}
       {placeholders}

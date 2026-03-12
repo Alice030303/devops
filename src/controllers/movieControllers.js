@@ -159,7 +159,7 @@ export async function addToFavorite(movieToAdd, userId) {
       movie = await watchDetails(movieToAdd.tmdbId);
     }
     await defineUserModel.findByIdAndUpdate(userId, {
-      $addToSet: { favorite: movie.id },
+      $addToSet: { favorite: movie.tmdbId },
     });
     return {
       success: true,
@@ -167,7 +167,7 @@ export async function addToFavorite(movieToAdd, userId) {
     };
   } catch (error) {
     console.error(error);
-    throw new Error("Impossible d'ajouter à la wishlist");
+    throw new Error("Impossible d'ajouter à la liste des favoris");
   }
 }
 export async function addToWishlist(movieToAdd, userId) {
@@ -180,7 +180,7 @@ export async function addToWishlist(movieToAdd, userId) {
       movie = await watchDetails(movieToAdd.tmdbId);
     }
     await defineUserModel.findByIdAndUpdate(userId, {
-      $addToSet: { wishlist: movie.id },
+      $addToSet: { wishlist: movie.tmdbId },
     });
     return {
       success: true,
@@ -202,8 +202,8 @@ export async function addToWatched(movieToAdd, userId) {
       movie = await watchDetails(movieToAdd.tmdbId);
     }
     await defineUserModel.findByIdAndUpdate(userId, {
-      $addToSet: { watched: movie.id },
-      $pull: { wishlist: movie.id },
+      $addToSet: { watched: movie.tmdbId },
+      $pull: { wishlist: movie.tmdbId },
     });
 
     return {
@@ -222,9 +222,7 @@ export async function findMoviesByIds(ids) {
     if (!Array.isArray(ids) || !ids.length) {
       throw new Error('ids must be a non-empty array');
     }
-    const mongoose = await import('mongoose');
-    const objectIds = ids.map((id) => new mongoose.Types.ObjectId(id));
-    const movies = await defineMovieModel.find({ _id: { $in: objectIds } });
+    const movies = await defineMovieModel.find({ tmdbId: { $in: ids } });
     return movies;
   } catch (error) {
     console.error(error);
@@ -284,7 +282,6 @@ export async function getRecommendationsFromFavorites(
         .filter(Boolean)
         .filter((t) => t.length > 1 && !/^\d/.test(t));
     }
-    console.info('Réponse IA', text);
     const tmdbResults = await Promise.all(
       titles.map(async (title) => {
         try {

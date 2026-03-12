@@ -55,7 +55,7 @@ export const UserMovieList = ({ propsListType = UserListType.WISHLIST }) => {
 
   return (
     <div className="user-list">
-      <MovieList movies={movies} />
+      <MovieList movies={movies} listType={listType} />
     </div>
   );
 };

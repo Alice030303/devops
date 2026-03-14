@@ -37,9 +37,9 @@ jobs:
     env:
       NODE_ENV: test
       MONGO_URI_TEST: mongodb://127.0.0.1:27017/test_db
-      JWT_SECRET: test_secret
       TMDB_BASE_URL: https://api.themoviedb.org/3/movie
-      API_KEY_TMDB: test_key
+      API_KEY_TMDB: ${{ secrets.TMDB_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
     steps:
       - uses: actions/checkout@v4

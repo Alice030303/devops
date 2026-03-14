@@ -25,7 +25,8 @@ jobs:
       NODE_ENV: test
       MONGO_URI_TEST: mongodb://127.0.0.1:27017/test_db
       JWT_SECRET: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
-
+      TMDB_BASE_URL: https://api.themoviedb.org/3/movie
+      TMDB_API_KEY: test_key
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

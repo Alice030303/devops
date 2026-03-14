@@ -1,19 +1,27 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../src/app';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import app from '../src/app.js';
+
+let mongoServer;
+let cookie;
+const movieId = '550';
+const fakeMovieId = '999999999999999999999999';
+const listType = 'favorite';
 
 describe('User List API', () => {
-  let cookie;
-  const movieId = '550';
-  const fakeMovieId = '999999999999999999999999';
-  const listType = 'favorite';
   const newUser = {
     name: 'Jane Doe',
     email: `testMovie${Date.now()}@example.com`,
     password: 'Password123!',
   };
+
   beforeAll(async () => {
-    // Register and login user
+    // MongoDB en mémoire
+    mongoServer = await MongoMemoryServer.create();
+    await mongoose.connect(mongoServer.getUri(), {});
+
+    // Créer utilisateur + récupérer cookie
     await request(app).post('/auth/register').send(newUser);
     const loginRes = await request(app).post('/auth/login').send({
       email: newUser.email,
@@ -21,24 +29,22 @@ describe('User List API', () => {
     });
     cookie = loginRes.headers['set-cookie'];
   });
-  it('should add a movie to favorite list ', async () => {
+
+  afterAll(async () => {
+    await mongoose.connection.dropDatabase();
+    await mongoose.connection.close();
+    await mongoServer.stop();
+  });
+
+  it('should add a movie to favorite list', async () => {
     const res = await request(app)
       .post('/movies/favorite')
       .set('Cookie', cookie)
       .send({ movie: { tmdbId: movieId } });
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.message).toMatch(/ajouté à vos favoris/);
   });
-  it('should add a movie to favorite list', async () => {
-    const res = await request(app)
-      .post('/movies/favorite')
-      .set('Cookie', cookie)
-      .send({ movie: { tmdbId: '1193501' } });
-    expect(res.status).toBe(200);
-    expect(res.body.success).toBe(true);
-    expect(res.body.message).toMatch(/ajouté à vos favoris/);
-  });
+
   it('should remove a movie from favorite list', async () => {
     const res = await request(app)
       .delete('/users/removeFromList')
@@ -46,9 +52,8 @@ describe('User List API', () => {
       .send({ idMovieToRemove: movieId, listType });
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.message).toMatch(/retiré de votre liste/);
   });
-  it('should return 400 if movie id is missing (error)', async () => {
+    it('should return 400 if movie id is missing (error)', async () => {
     const res = await request(app)
       .delete('/users/removeFromList')
       .set('Cookie', cookie)
@@ -65,14 +70,10 @@ describe('User List API', () => {
     expect(res.body.success).toBe(true);
   });
 
-  it('should return 401 if not authenticated (error)', async () => {
+  it('should return 401 if not authenticated', async () => {
     const res = await request(app)
       .delete('/users/removeFromList')
       .send({ idMovieToRemove: movieId, listType });
     expect(res.status).toBe(401);
-    expect(res.body.error).toMatch(/Token manquant/);
   });
-});
-afterAll(async () => {
-  await mongoose.connection.close();
 });

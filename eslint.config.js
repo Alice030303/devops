@@ -8,6 +8,7 @@ export default [
     languageOptions: {
       globals: {
         ...globals.node, // variables Node classiques
+        ...globals.jest, // Ajoute tous les globals Jest
         describe: "readonly",
         it: "readonly",
         expect: "readonly",

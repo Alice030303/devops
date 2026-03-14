@@ -20,19 +20,38 @@ router.get('/:id/details', async function movieDetails(req, res) {
 });
 
 router.post('/favorite', auth, async function addToFavorite(req, res) {
-  res.send(
-    await movieControllers.addToFavorite(req.body.movie, req.user.userId)
-  );
+  
+  if (!req.body.movie || !req.body.movie.tmdbId) {
+    return res.status(400).json({ error: 'movie object with tmdbId required' });
+  }
+  try {
+    const result = await movieControllers.addToFavorite(req.body.movie, req.user.userId);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 router.post('/wishlist', auth, async function addToWishlist(req, res) {
-  res.send(
-    await movieControllers.addToWishlist(req.body.movie, req.user.userId)
-  );
+  if (!req.body.movie || !req.body.movie.tmdbId) {
+    return res.status(400).json({ error: 'movie object with tmdbId required' });
+  }
+  try {
+    const result = await movieControllers.addToWishlist(req.body.movie, req.user.userId);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 router.post('/watched', auth, async function addToWatched(req, res) {
-  res.send(
-    await movieControllers.addToWatched(req.body.movie, req.user.userId)
-  );
+  if (!req.body.movie || !req.body.movie.tmdbId) {
+    return res.status(400).json({ error: 'movie object with tmdbId required' });
+  }
+  try {
+    const result = await movieControllers.addToWatched(req.body.movie, req.user.userId);
+    res.send(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.post('/findMovies', auth, async function findMoviesByIds(req, res) {

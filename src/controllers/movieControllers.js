@@ -7,9 +7,7 @@ const TMDB_URL = process.env.TMDB_BASE_URL;
 export async function list(params) {
   try {
     const page = params.page || 1;
-    const response = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?page=${page}`,
-      {
+    const response = await fetch(`${TMDB_URL}/discover/movie?page=${page}`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${process.env.API_KEY_TMDB}`,
@@ -17,6 +15,10 @@ export async function list(params) {
         },
       }
     );
+    if (!response.ok) {
+      throw new Error(`TMDB error: ${response.status}`);
+    }
+
 
     const data = await response.json();
 
@@ -41,6 +43,10 @@ export async function search(query, page = 1) {
         },
       }
     );
+    if (!response.ok) {
+      throw new Error(`TMDB error: ${response.status}`);
+    }
+
 
     const data = await response.json();
     return data;
@@ -49,76 +55,73 @@ export async function search(query, page = 1) {
     throw new Error('Impossible de rechercher des films');
   }
 }
+
 export async function watchDetails(idMovie) {
   if (!idMovie) {
     throw new Error('idMovie is required');
   }
+
   try {
+    
     const movieInDB = await defineMovieModel.findOne({ tmdbId: idMovie });
     if (movieInDB) {
       const hasDetails =
-        movieInDB &&
-        ((movieInDB.cast && movieInDB.cast.length > 0) ||
-          (movieInDB.videos && movieInDB.videos.length > 0) ||
-          (movieInDB.watchProviders &&
-            Object.keys(movieInDB.watchProviders).length > 0));
+        (movieInDB.cast?.length > 0) ||
+        (movieInDB.videos?.length > 0) ||
+        (movieInDB.watchProviders && Object.keys(movieInDB.watchProviders).length > 0);
 
-      if (hasDetails) {
-        return movieInDB;
-      }
+      if (hasDetails) return movieInDB;
     }
 
+    
     const responseMovie = await fetch(`${TMDB_URL}/${idMovie}`, {
       method: 'GET',
       headers: { Authorization: `Bearer ${API_KEY}` },
     });
 
-    const [
-      responseCredits,
-      responseVideo,
-      responseImage,
-      responseWatchProviders,
-    ] = await Promise.all([
-      fetch(`${TMDB_URL}/${idMovie}/credits`, {
-        headers: { Authorization: `Bearer ${API_KEY}` },
-      }),
-      fetch(`${TMDB_URL}/${idMovie}/videos`, {
-        headers: { Authorization: `Bearer ${API_KEY}` },
-      }),
-      fetch(`${TMDB_URL}/${idMovie}/images`, {
-        headers: { Authorization: `Bearer ${API_KEY}` },
-      }),
-      fetch(`${TMDB_URL}/${idMovie}/watch/providers`, {
-        headers: { Authorization: `Bearer ${API_KEY}` },
-      }),
-    ]);
+    if (!responseMovie.ok) {
+      throw new Error(`Erreur TMDB movie: ${responseMovie.status}`);
+    }
 
-    const [movieDetails, credits, videos, images, watchProvidersData] =
-      await Promise.all([
-        responseMovie.json(),
-        responseCredits.json(),
-        responseVideo.json(),
-        responseImage.json(),
-        responseWatchProviders.json(),
-      ]);
+    const movieDetails = await responseMovie.json();
 
-    const posterPaths = images.posters
-      ? images.posters.map((poster) => poster.file_path)
-      : [];
-
-    const backdropPaths = images.backdrops
-      ? images.backdrops.map((backdrop) => backdrop.file_path)
-      : [];
-
-    const imagesToStore = {
-      posterPaths,
-      backdropPaths,
+    
+    const safeFetch = async (url) => {
+      try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${API_KEY}` } });
+        if (!res.ok) return null;
+        return res.json();
+      } catch {
+        return null;
+      }
     };
 
-    const limitedCast = credits.cast.slice(0, 10);
-    const limitedCrew = credits.crew.slice(0, 10);
-    const limitedProviders = watchProvidersData.results.FR || {};
+    
+    const [credits, videos, images, watchProvidersData] = await Promise.all([
+      safeFetch(`${TMDB_URL}/${idMovie}/credits`),
+      safeFetch(`${TMDB_URL}/${idMovie}/videos`),
+      safeFetch(`${TMDB_URL}/${idMovie}/images`),
+      safeFetch(`${TMDB_URL}/${idMovie}/watch/providers`),
+    ]);
 
+    
+    if (!credits) console.warn(`Credits introuvables pour ${idMovie}`);
+    if (!videos) console.warn(`Vidéos introuvables pour ${idMovie}`);
+    if (!images) console.warn(`Images introuvables pour ${idMovie}`);
+    if (!watchProvidersData) console.warn(`Watch providers introuvables pour ${idMovie}`);
+
+    
+    const posterPaths = images?.posters?.map(p => p.file_path) || [];
+    const backdropPaths = images?.backdrops?.map(b => b.file_path) || [];
+    const imagesToStore = { posterPaths, backdropPaths };
+
+    
+    const limitedCast = credits?.cast?.slice(0, 10) || [];
+    const limitedCrew = credits?.crew?.slice(0, 10) || [];
+    const limitedVideos = videos?.results || [];
+    const limitedProviders = watchProvidersData?.results?.FR || {};
+
+    
     const updatedMovieData = {
       ...movieDetails,
       date: movieDetails.release_date,
@@ -126,12 +129,13 @@ export async function watchDetails(idMovie) {
       posterPath: movieDetails.poster_path,
       cast: limitedCast,
       crew: limitedCrew,
-      videos: videos.results,
-      images: { ...imagesToStore },
+      videos: limitedVideos,
+      images: imagesToStore,
       runtime: movieDetails.runtime,
       watchProviders: limitedProviders,
     };
 
+    
     const savedMovie = await defineMovieModel.findOneAndUpdate(
       { tmdbId: idMovie },
       updatedMovieData,
@@ -148,7 +152,6 @@ export async function watchDetails(idMovie) {
     throw error;
   }
 }
-
 export async function addToFavorite(movieToAdd, userId) {
   try {
     if (!movieToAdd || !movieToAdd.tmdbId) {

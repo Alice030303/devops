@@ -1,6 +1,6 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
-import app from '../app';
+import app from '../src/app';
 
 describe('Auth API', () => {
   const newUser = {

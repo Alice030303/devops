@@ -4,12 +4,13 @@
     "test": "NODE_ENV=test node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "migrate": "node migrate.js",
     "start": "node index.js",
-    "lint": "echo '----- Checking Backend...' && npx prettier --debug-check . && eslint --ext .js . && echo '----- Done!'",
+    "lint": "eslint .",
     "fix": "prettier --write . && eslint --fix --ext .js ."
   },
   "type": "module",
   "dependencies": {
     "@jest/globals": "^30.2.0",
+    "@vitejs/plugin-react": "^6.0.1",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -22,11 +23,14 @@
     "react-router-dom": "^7.9.6"
   },
   "devDependencies": {
-    "eslint": "^8.32.0",
+    "@eslint/js": "^8.57.1",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^8.57.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prettier": "^4.2.1",
+    "globals": "^17.4.0",
     "jest": "^30.2.0",
     "nodemon": "^2.0.20",
     "prettier": "^2.8.3",

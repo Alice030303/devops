@@ -1,4 +1,4 @@
 import { useContext } from 'react';
 import { UserContext } from './UserContext.js';
 
-export const useUser = () => useContext(UserContext);
+export default () => useContext(UserContext);

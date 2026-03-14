@@ -28,13 +28,17 @@ router.get('/search', auth, async function searchUsers(req, res) {
 
 router.delete('/removeFromList', auth, async function removeFromList(req, res) {
   const { idMovieToRemove, listType } = req.body;
-
-  return res.send(
-    await userControllers.removeFromList(
+  try {
+    const result = await userControllers.removeFromList(
       idMovieToRemove,
       req.user.userId,
       listType
-    )
-  );
+    );
+    return res.status(200).json(result);
+  } catch (e) {
+    return res
+      .status(500)
+      .send({ error: e.message || 'Erreur lors du retrait' });
+  }
 });
 export default router;
